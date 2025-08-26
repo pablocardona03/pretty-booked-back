@@ -1,0 +1,47 @@
+version: "3.9"
+services:
+  web:
+    build: .
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: [ "8000:8000" ]
+    volumes:
+      - ./app:/app/app:delegated
+      - ./alembic:/app/alembic:delegated
+      - ./alembic.ini:/app/alembic.ini:delegated
+    command: gunicorn -w 2 -b 0.0.0.0:8000 app.main:app
+
+  alembic:
+    build: .
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    working_dir: /app
+    volumes:
+      - ./app:/app/app:delegated
+      - ./alembic:/app/alembic:delegated
+      - ./alembic.ini:/app/alembic.ini:delegated
+
+  db:
+    image: postgres:16
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  pgdata:
+
