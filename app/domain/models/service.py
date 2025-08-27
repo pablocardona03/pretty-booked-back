@@ -4,15 +4,13 @@ from typing import Optional
 from uuid import UUID
 
 @dataclass
-class UserModel:
-    name: str
-    last_name: str
-    email: str
-    password: str
-    business_name: str
-    cell_phone: str
+class ServiceModel:
     description: str
-    address: str
+    category: str
+    technique: str
+    price: float
+    duration: int
+    owner_id: UUID
 
     is_active: Optional[bool] = True
     id: Optional[UUID] = None
